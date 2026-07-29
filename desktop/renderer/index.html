@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self'">
+  <title>FluxSave</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="traffic-space"></div>
+    <div class="brand"><span>ϟ</span> FluxSave</div>
+    <div class="engine"><i></i><span id="engine-status">Ready</span></div>
+  </header>
+  <main>
+    <section class="intro">
+      <div class="eyebrow"><b>●</b> NATIVE MEDIA DOWNLOADER</div>
+      <h1>Save it in<br><em>full quality.</em></h1>
+      <p>Paste a video or Instagram Story link, choose the exact resolution or MP3 quality, and save it directly to your computer.</p>
+      <form id="analyze-form">
+        <div class="url-row">
+          <span class="link">↗</span>
+          <input id="url" type="url" required placeholder="Paste a video link here…">
+          <button class="find" id="find">Find video <b>→</b></button>
+        </div>
+      </form>
+      <div class="working-panel" id="checking-panel" role="status" aria-live="polite">
+        <div class="scanner"><i></i></div>
+        <div><strong id="checking-title">Checking the link…</strong><small id="checking-detail">Reading video details and available quality</small></div>
+      </div>
+      <div class="platforms"><span>▶ YouTube</span><span>𝕏 Twitter</span><span>◎ Instagram</span><span>◉ Snapchat</span></div>
+      <div class="login-card">
+        <label><input id="use-login" type="checkbox"> Use my browser login for Instagram stories/private accounts I can view</label>
+        <select id="login-browser" aria-label="Browser containing your Instagram login">
+          <option value="chrome">Google Chrome</option>
+          <option value="safari">Safari (macOS)</option>
+          <option value="edge">Microsoft Edge</option>
+          <option value="firefox">Firefox</option>
+          <option value="chromium">Chromium</option>
+        </select>
+        <small>Your login stays on this computer. FluxSave never asks for or stores your Instagram password.</small>
+      </div>
+      <div class="error" id="error"></div>
+    </section>
+
+    <section class="result" id="result">
+      <div class="media">
+        <div class="thumb" id="thumb"><span>▶</span></div>
+        <div class="meta"><small id="platform"></small><h2 id="title"></h2><p id="details"></p></div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-mode="video">▣ Video</button>
+        <button class="tab" data-mode="audio">♫ MP3 Audio</button>
+      </div>
+      <div class="options" id="options"></div>
+      <div class="folder-row">
+        <div><small>SAVE TO</small><strong id="folder">Downloads</strong></div>
+        <button id="choose-folder">Change folder</button>
+      </div>
+      <div class="queue-choice">
+        <button id="add-queue" type="button">＋ Add to queue</button>
+        <span>Keep this item, then paste another link above</span>
+      </div>
+      <div class="download-actions">
+        <button class="download" id="download"><span>Download now</span><b class="download-icon">↓</b></button>
+        <button class="cancel-download" id="cancel-download" type="button">Cancel</button>
+      </div>
+      <div class="progress-wrap" id="progress-wrap"><div class="progress"><i id="progress"></i></div><span id="percent">0%</span></div>
+      <div class="complete" id="complete"><span>✓ Download complete</span><button id="show-file">Show in folder ↗</button></div>
+      <p class="rights">Video output is always H.264 + AAC MP4. 1440p/4K sources require conversion and may take longer. Only download media you own or have permission to save.</p>
+    </section>
+
+    <section class="queue-panel" id="queue-panel">
+      <div class="queue-head">
+        <div><small>DOWNLOAD QUEUE · 2 AT A TIME</small><h3>Saved links <span id="queue-count">0</span></h3></div>
+        <button id="clear-queue" type="button">Clear waiting</button>
+      </div>
+      <div class="queue-list" id="queue-list"></div>
+      <div class="download-actions">
+        <button class="download" id="download-queue"><span>Download all</span><b class="download-icon">↓</b></button>
+        <button class="cancel-download" id="cancel-queue" type="button">Cancel</button>
+      </div>
+    </section>
+  </main>
+  <script src="renderer.js"></script>
+</body>
+</html>

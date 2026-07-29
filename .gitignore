@@ -1,0 +1,16 @@
+.DS_Store
+.fluxsave/
+.pnpm-store/
+.vinext/
+.wrangler/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+outputs/
+work/
+
+desktop/node_modules/
+desktop/stage/
+desktop/release/
+desktop/dist/
