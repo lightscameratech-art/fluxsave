@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FluxSave — Local Media Downloader</title>
+  <style>
+    :root{--ink:#101315;--paper:#f4f2eb;--muted:#70736e;--lime:#d7ff43;--line:#d8d6ce}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif}
+    nav{height:76px;max-width:1160px;margin:auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ddd9}
+    .brand{font-size:21px;font-weight:900;letter-spacing:-.8px}.nav-actions{display:flex;align-items:center;gap:9px}.local{font:700 10px monospace;letter-spacing:1.4px;text-transform:uppercase;background:#e4ff83;padding:7px 10px;border-radius:99px}.settings-button{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;background:#fff;font-size:17px}
+    main{max-width:900px;margin:auto;padding:85px 24px 100px;text-align:center}
+    .eyebrow{font:700 11px monospace;letter-spacing:1.5px;text-transform:uppercase}.eyebrow b{color:#739500}
+    h1{font-size:clamp(54px,8vw,92px);line-height:.93;letter-spacing:-6px;margin:28px 0 25px}
+    h1 em{font-family:Georgia,serif;font-weight:400;color:#555852}.sub{max-width:630px;margin:0 auto;color:var(--muted);font-size:17px;line-height:1.55}
+    .inputbox{display:flex;gap:10px;background:white;border:1px solid var(--line);border-radius:12px;padding:9px;margin:40px auto 13px;box-shadow:0 18px 50px #20221c1a}
+    input{flex:1;border:0;outline:0;padding:15px;font-size:15px;min-width:0}button{border:0;cursor:pointer;font-weight:800}
+    .primary{background:var(--lime);padding:15px 21px;border-radius:7px;color:var(--ink)}button:disabled{opacity:.6;cursor:wait}
+    .supports{font-size:12px;color:#858781}.supports span{margin:0 8px}.error{color:#b22f2f;font-size:13px;margin:14px}
+    .card{display:none;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:38px;box-shadow:0 24px 70px #20221c18}
+    .media{display:flex;gap:18px;align-items:center;padding-bottom:20px;border-bottom:1px solid #e9e7e0}
+    .thumb{width:150px;height:90px;border-radius:8px;background:#262a27 center/cover;flex:none}.meta small{font:700 10px monospace;color:#78970f;text-transform:uppercase}.meta h2{font-size:23px;margin:8px 0 6px;letter-spacing:-.8px}.meta p{font-size:12px;color:var(--muted);margin:0}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0 12px}.tab{padding:13px;border:1px solid var(--line);border-radius:7px;background:#f5f4ef;color:#777}.tab.active{background:var(--ink);color:#fff}
+    .options{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:11px 0}.option{padding:14px 8px;border:1px solid var(--line);border-radius:7px;background:white}.option.active{border-color:#9dc20c;background:#faffeb;box-shadow:inset 0 0 0 1px #c4eb37}
+    .quality-detail{min-height:28px;padding:8px 11px;border-radius:7px;background:#f1f0ea;color:#666a64;font:700 10px monospace}.duplicate-warning{display:none;margin:10px 0;padding:11px;border:1px solid #e3c975;border-radius:7px;background:#fff8d9;color:#795d00;font-size:11px}.duplicate-warning.show{display:block}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}.download,.add{width:100%;display:flex;justify-content:space-between;font-size:14px}.add{padding:15px 18px;border-radius:7px;background:#171b19;color:#fff}.note{font-size:10px;color:#92948f;text-align:center;margin:12px 0 0}
+    .progress{display:none;height:3px;background:#e4e4dd;overflow:hidden;border-radius:9px;margin-top:14px}.progress i{display:block;height:100%;width:35%;background:#91b809;animation:move 1s infinite linear}@keyframes move{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
+    .queue{display:none;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px;box-shadow:0 20px 55px #20221c12}.queue-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid #e9e7e0}.queue-head small{font:700 9px monospace;letter-spacing:1px;color:#777}.queue-head h3{margin:4px 0 0}.count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:20px;background:var(--lime);font-size:11px}.clear{background:transparent;color:#8b4f4f}.queue-list{display:grid;gap:7px;margin-top:12px}.queue-item{display:grid;grid-template-columns:32px minmax(0,1fr) auto auto auto;gap:8px;align-items:center;padding:10px;background:#f7f6f1;border-radius:8px}.num{display:grid;place-items:center;width:30px;height:30px;border-radius:7px;background:#e8e6de;font:800 10px monospace}.qcopy{min-width:0}.qcopy strong,.qcopy small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.qcopy strong{font-size:12px}.qcopy small{font-size:9px;color:#777;margin-top:3px}.status{min-width:76px;text-align:center;border-radius:20px;padding:6px 8px;background:#e7e5dd;font:800 9px monospace;text-transform:uppercase}.status.downloading{background:#edfac4;color:#5a7300}.status.done{background:#ddf4d7;color:#34702c}.status.failed{background:#f7dada;color:#9b3030}.status.paused{background:#fff1c9;color:#846300}.queue-controls{display:flex;gap:3px}.queue-controls button{width:25px;height:25px;border-radius:5px;background:#e8e6de;color:#555}.remove{background:transparent;color:#888;font-size:18px}.queue-run{margin-top:13px}.queue-summary{font:700 10px monospace;color:#6c7069;text-align:center;margin-top:9px}
+    .settings{display:none;position:fixed;z-index:20;right:24px;top:68px;width:min(390px,calc(100vw - 32px));max-height:calc(100vh - 88px);overflow:auto;padding:20px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 75px #15171335;text-align:left}.settings.open{display:block}.settings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}.settings-head h2{font-size:20px;margin:0}.settings-close{background:transparent;font-size:21px;color:#777}.setting-row{display:grid;grid-template-columns:1fr 145px;gap:14px;align-items:center;padding:12px 0;border-top:1px solid #eeece5}.setting-copy strong,.setting-copy small{display:block}.setting-copy strong{font-size:13px}.setting-copy small{font-size:10px;color:#858781;margin-top:4px;line-height:1.35}.setting-row select{width:100%;padding:10px;border:1px solid var(--line);border-radius:7px;background:#f8f7f2;font-weight:700}.settings-save{width:100%;margin-top:15px}.fixed-setting{font:800 10px monospace;color:#668000;text-align:right}
+    .history{display:block;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}.history-head{display:flex;justify-content:space-between;align-items:center}.history-head h3{margin:0}.history-head small{color:#858781}.history-list{display:grid;gap:7px;margin-top:12px}.history-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:10px;background:#f7f6f1;border-radius:8px}.history-item strong,.history-item small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.history-item strong{font-size:11px}.history-item small{font-size:9px;color:#777;margin-top:4px}.history-date{font:700 9px monospace;color:#777;white-space:nowrap}
+    @media(max-width:650px){main{padding-top:55px}h1{letter-spacing:-4px}.inputbox{flex-wrap:wrap}.inputbox button{width:100%}.media{align-items:flex-start}.thumb{width:105px;height:78px}.options{grid-template-columns:1fr 1fr}.meta h2{font-size:18px}}
+  </style>
+</head>
+<body>
+  <nav><div class="brand">⚡ FluxSave</div><div class="nav-actions"><div class="local">● Running locally</div><button class="settings-button" id="settings-open" type="button" aria-label="Open settings">⚙</button></div></nav>
+  <aside class="settings" id="settings-panel">
+    <div class="settings-head"><h2>Settings</h2><button class="settings-close" id="settings-close" type="button" aria-label="Close settings">×</button></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Default download</strong><small>Mode selected after finding a link</small></div><select id="setting-mode"><option value="video">Video</option><option value="audio">MP3 Audio</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Download preset</strong><small>Automatically selects a useful quality</small></div><select id="setting-preset"><option value="maximum">Maximum quality</option><option value="quick1080">Quick 1080p</option><option value="small">Small phone copy</option><option value="mp3">MP3 320 kbps</option><option value="original">Original quality</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>MP3 quality</strong><small>Used when MP3 Audio is selected</small></div><select id="setting-mp3"><option value="320">320 kbps</option><option value="256">256 kbps</option><option value="192">192 kbps</option><option value="128">128 kbps</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Simultaneous downloads</strong><small>Lower this on slower computers</small></div><select id="setting-parallel"><option value="1">1 at a time</option><option value="2">2 at a time</option><option value="3">3 at a time</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Embed subtitles</strong><small>Includes available manual or automatic captions</small></div><select id="setting-subtitles"><option value="off">Off</option><option value="embed">Embed</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Metadata and chapters</strong><small>Embed title, creator and chapter information</small></div><select id="setting-metadata"><option value="on">On</option><option value="off">Off</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Embed thumbnail</strong><small>Add cover art when the format supports it</small></div><select id="setting-thumbnail"><option value="off">Off</option><option value="on">On</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>YouTube SponsorBlock</strong><small>Mark or remove common sponsored sections</small></div><select id="setting-sponsor"><option value="off">Off</option><option value="mark">Mark chapters</option><option value="remove">Remove segments</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Clipboard detection</strong><small>Privately checks copied supported links while this page is open</small></div><select id="setting-clipboard"><option value="off">Off</option><option value="on">On</option></select></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Video engine</strong><small id="engine-update-status">Manually check before packaging a release</small></div><button class="primary" id="engine-update" type="button">Update</button></div>
+    <div class="setting-row"><div class="setting-copy"><strong>Compatibility</strong><small>Clean filenames and playable output</small></div><div class="fixed-setting">H.264 + AAC MP4<br>CLEAN NAMES</div></div>
+    <button class="primary settings-save" id="settings-save" type="button">Save settings</button>
+  </aside>
+  <main>
+    <div class="eyebrow"><b>●</b> One link. Every format.</div>
+    <h1>Save what you love.<br><em>In full quality.</em></h1>
+    <p class="sub">Download public videos in their highest available resolution, or extract a high-quality MP3 — processed privately on this computer.</p>
+    <form class="inputbox" id="form"><input id="url" type="text" required placeholder="Paste one or multiple links..."><button class="primary" id="find">Find video →</button></form>
+    <div class="supports"><span>✓ Highest available quality</span><span>✓ MP3 extraction</span><span>✓ No upload to FluxSave</span></div>
+    <div class="error" id="error"></div>
+    <section class="card" id="card">
+      <div class="media"><div class="thumb" id="thumb"></div><div class="meta"><small id="platform"></small><h2 id="title"></h2><p id="duration"></p></div></div>
+      <div class="tabs"><button class="tab active" data-mode="video">▣ Video</button><button class="tab" data-mode="audio">♫ MP3 Audio</button></div>
+      <div class="options" id="options"></div>
+      <div class="quality-detail" id="quality-detail"></div>
+      <div class="duplicate-warning" id="duplicate-warning"></div>
+      <div class="actions">
+        <button class="add" id="add-queue" type="button"><span>Add to queue</span><b>＋</b></button>
+        <button class="primary download" id="download" type="button"><span>Download now</span><b>↓</b></button>
+      </div>
+      <div class="progress" id="progress"><i></i></div>
+      <p class="note">Download only media you own or have permission to save. Private and DRM-protected content is unsupported.</p>
+    </section>
+    <section class="history" id="history">
+      <div class="history-head"><h3>Download history</h3><small id="history-count">0 completed</small></div>
+      <div class="history-list" id="history-list"><small>No completed downloads yet.</small></div>
+    </section>
+    <section class="queue" id="queue">
+      <div class="queue-head">
+        <div><small>DOWNLOAD QUEUE · <span id="parallel-label">2</span> AT A TIME</small><h3>Saved links <span class="count" id="queue-count">0</span></h3></div>
+        <button class="clear" id="clear" type="button">Clear waiting</button>
+      </div>
+      <div class="queue-list" id="queue-list"></div>
+      <button class="primary download queue-run" id="download-all" type="button"><span>Download all</span><b>↓↓</b></button>
+      <div class="queue-summary" id="queue-summary"></div>
+    </section>
+  </main>
+  <script>
+    const $=id=>document.getElementById(id);
+    const savedSettings=(()=>{try{return JSON.parse(localStorage.getItem("fluxsave-settings")||"{}")}catch{return{}}})();
+    const settings={
+      defaultMode:["video","audio"].includes(savedSettings.defaultMode)?savedSettings.defaultMode:"video",
+      preset:["maximum","quick1080","small","mp3","original"].includes(savedSettings.preset)?savedSettings.preset:"maximum",
+      mp3Quality:["320","256","192","128"].includes(String(savedSettings.mp3Quality))?String(savedSettings.mp3Quality):"320",
+      parallelDownloads:[1,2,3].includes(Number(savedSettings.parallelDownloads))?Number(savedSettings.parallelDownloads):2,
+      subtitles:savedSettings.subtitles===true,
+      metadata:savedSettings.metadata!==false,
+      thumbnail:savedSettings.thumbnail===true,
+      sponsorBlock:["off","mark","remove"].includes(savedSettings.sponsorBlock)?savedSettings.sponsorBlock:"off",
+      clipboard:savedSettings.clipboard===true
+    };
+    const state={mode:settings.defaultMode,quality:"best",info:null,currentUrl:"",queue:[],running:false};
+    const time=s=>s?`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")} • Public media`:"Duration unavailable";
+    const qualityLabel=job=>job.mode==="audio"?`${job.quality} kbps MP3`:job.quality==="best"?"Best available MP4":`${job.quality}p MP4`;
+    const isTestUrl=url=>url.includes("example.com/fluxsave-test/");
+    const formatBytes=value=>value?`${(value/1048576).toFixed(value>=10485760?0:1)} MB`:"size unavailable";
+
+    async function infoForUrl(url){
+      if(isTestUrl(url)){
+        const testId=url.replace(/\/$/,"").split("/").pop();
+        return{title:`FluxSave Queue Test ${testId}`,thumbnail:null,duration:1,platform:"Local Test",resolutions:[720,480,360]};
+      }
+      const response=await fetch("/api/info?url="+encodeURIComponent(url));
+      const info=await response.json();if(!response.ok)throw Error(info.error);return info;
+    }
+
+    function renderOptions(){
+      const values=state.mode==="audio"
+        ?[["320","320 kbps"],["256","256 kbps"],["192","192 kbps"],["128","128 kbps"]]
+        :[["best","Best available"],...(state.info.qualities||[]).slice(0,9).map(item=>[String(item.value),item.label])];
+      let preferred=state.mode==="audio"?settings.mp3Quality:"best";
+      if(state.mode==="video"&&settings.preset==="quick1080"){
+        const choice=(state.info.qualities||[]).find(item=>item.height<=1080);preferred=choice?String(choice.value):"best";
+      }
+      if(state.mode==="video"&&settings.preset==="small"){
+        const choice=(state.info.qualities||[]).find(item=>item.height<=480);preferred=choice?String(choice.value):"best";
+      }
+      state.quality=values.some(([value])=>value===preferred)?preferred:values[0][0];
+      $("options").innerHTML=values.map(([v,l])=>`<button class="option ${v===state.quality?"active":""}" data-value="${v}">${l}</button>`).join("");
+      renderQualityDetail();
+      document.querySelectorAll(".option").forEach(button=>button.onclick=()=>{
+        document.querySelectorAll(".option").forEach(item=>item.classList.remove("active"));
+        button.classList.add("active");
+        state.quality=button.dataset.value;renderQualityDetail();
+      });
+    }
+
+    function renderQualityDetail(){
+      if(state.mode==="audio"){$("quality-detail").textContent=`MP3 · ${state.quality} kbps · clean title`;return}
+      const qualities=state.info?.qualities||[];
+      const item=state.quality==="best"?qualities[0]:qualities.find(value=>String(value.value)===String(state.quality));
+      $("quality-detail").textContent=item
+        ?`${item.label} · ${item.codec||"source codec"} · ${item.fps||"?"} FPS · ${item.dynamicRange||"SDR"} · about ${formatBytes(item.estimatedBytes)}`
+        :"Best source available · final output H.264 + AAC MP4";
+    }
+
+    function currentJob(){
+      if(!state.info||!state.currentUrl)return null;
+      return{id:`${Date.now()}-${Math.random()}`,url:state.currentUrl,mode:state.mode,quality:state.quality,title:state.info.title,platform:state.info.platform,status:"waiting",error:"",features:{
+        subtitles:settings.subtitles,metadata:settings.metadata,thumbnail:settings.thumbnail,sponsorBlock:settings.sponsorBlock
+      }};
+    }
+
+    function renderQueue(){
+      $("queue").style.display=state.queue.length?"block":"none";
+      $("queue-count").textContent=state.queue.length;
+      $("download-all").disabled=state.running||!state.queue.some(job=>job.status!=="done");
+      $("clear").disabled=state.running;
+      const list=$("queue-list");list.replaceChildren();
+      state.queue.forEach((job,index)=>{
+        const row=document.createElement("div");row.className="queue-item";
+        const num=document.createElement("span");num.className="num";num.textContent=String(index+1).padStart(2,"0");
+        const copy=document.createElement("div");copy.className="qcopy";
+        const title=document.createElement("strong");title.textContent=job.title;
+        const detail=document.createElement("small");detail.textContent=job.error||`${job.platform} · ${qualityLabel(job)}`;
+        copy.append(title,detail);
+        const status=document.createElement("span");status.className=`status ${job.status}`;status.textContent=job.status;
+        const controls=document.createElement("div");controls.className="queue-controls";
+        const up=document.createElement("button");up.textContent="↑";up.title="Move up";up.disabled=state.running||index===0;
+        up.onclick=()=>{[state.queue[index-1],state.queue[index]]=[state.queue[index],state.queue[index-1]];renderQueue()};
+        const down=document.createElement("button");down.textContent="↓";down.title="Move down";down.disabled=state.running||index===state.queue.length-1;
+        down.onclick=()=>{[state.queue[index],state.queue[index+1]]=[state.queue[index+1],state.queue[index]];renderQueue()};
+        const pause=document.createElement("button");pause.textContent=job.status==="paused"?"▶":"Ⅱ";pause.title=job.status==="paused"?"Resume queued item":"Pause queued item";
+        pause.disabled=!["waiting","failed","paused"].includes(job.status);
+        pause.onclick=()=>{job.status=job.status==="paused"?"waiting":"paused";renderQueue()};
+        controls.append(up,down,pause);
+        const remove=document.createElement("button");remove.className="remove";remove.textContent="×";remove.disabled=state.running;
+        remove.onclick=()=>{state.queue=state.queue.filter(item=>item.id!==job.id);renderQueue()};
+        row.append(num,copy,status,controls,remove);list.append(row);
+      });
+      const active=state.queue.filter(job=>job.status==="downloading").length;
+      const done=state.queue.filter(job=>job.status==="done").length;
+      $("queue-summary").textContent=state.running?`${active} active · ${done}/${state.queue.length} completed`:"";
+    }
+
+    async function fetchDownload(job){
+      if(isTestUrl(job.url)){
+        await new Promise(resolve=>setTimeout(resolve,900));
+        return;
+      }
+      const response=await fetch("/api/download",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(job)});
+      if(!response.ok){const payload=await response.json();throw Error(payload.error)}
+      const blob=await response.blob();
+      const disposition=response.headers.get("Content-Disposition")||"";
+      let name="fluxsave-download";
+      const match=disposition.match(/filename\*=UTF-8''([^;]+)/);
+      if(match)name=decodeURIComponent(match[1]);
+      const anchor=document.createElement("a");
+      anchor.href=URL.createObjectURL(blob);anchor.download=name;anchor.click();
+      setTimeout(()=>URL.revokeObjectURL(anchor.href),30000);
+      loadHistory();
+    }
+
+    async function loadHistory(){
+      try{
+        const response=await fetch("/api/history");const payload=await response.json();
+        const items=payload.items||[];$("history-count").textContent=`${items.length} completed`;
+        const list=$("history-list");list.replaceChildren();
+        if(!items.length){const empty=document.createElement("small");empty.textContent="No completed downloads yet.";list.append(empty);return}
+        items.slice(0,20).forEach(item=>{
+          const row=document.createElement("div");row.className="history-item";
+          const copy=document.createElement("div");const title=document.createElement("strong");title.textContent=item.title;
+          const detail=document.createElement("small");detail.textContent=`${item.filename} · ${item.quality} · ${item.location}`;
+          const date=document.createElement("span");date.className="history-date";date.textContent=new Date(item.completedAt).toLocaleString();
+          copy.append(title,detail);row.append(copy,date);list.append(row);
+        });
+      }catch{}
+    }
+
+    $("form").onsubmit=async event=>{
+      event.preventDefault();$("error").textContent="";$("find").disabled=true;$("find").textContent="Checking...";
+      const requestedUrl=$("url").value.trim();
+      try{
+        const pastedUrls=requestedUrl.split(/\s+/).filter(value=>/^https?:\/\//i.test(value));
+        if(pastedUrls.length>1){
+          for(const itemUrl of pastedUrls){
+            const itemInfo=await infoForUrl(itemUrl);
+            state.queue.push({id:`${Date.now()}-${Math.random()}`,url:itemUrl,mode:settings.preset==="mp3"?"audio":settings.defaultMode,quality:settings.preset==="mp3"?"320":"best",title:itemInfo.title,platform:itemInfo.platform,status:"waiting",error:"",features:{subtitles:settings.subtitles,metadata:settings.metadata,thumbnail:settings.thumbnail,sponsorBlock:settings.sponsorBlock}});
+          }
+          renderQueue();$("url").value="";$("error").textContent=`Added ${pastedUrls.length} links to the queue.`;return;
+        }
+        const info=await infoForUrl(requestedUrl);
+        if(info.entries?.length){
+          info.entries.forEach(entry=>state.queue.push({id:`${Date.now()}-${Math.random()}`,url:entry.url,mode:settings.preset==="mp3"?"audio":settings.defaultMode,quality:settings.preset==="mp3"?"320":"best",title:entry.title,platform:entry.platform,status:"waiting",error:"",features:{subtitles:settings.subtitles,metadata:settings.metadata,thumbnail:settings.thumbnail,sponsorBlock:settings.sponsorBlock}}));
+          renderQueue();$("url").value="";$("error").textContent=`Added ${info.entries.length} playlist items to the queue.`;return;
+        }
+        state.info=info;state.currentUrl=requestedUrl;
+        $("title").textContent=info.title;$("platform").textContent="● "+info.platform+" link detected";
+        $("duration").textContent=time(info.duration);$("thumb").style.backgroundImage=info.thumbnail?`url("${info.thumbnail}")`:"";
+        state.mode=settings.preset==="mp3"?"audio":settings.defaultMode;
+        document.querySelectorAll(".tab").forEach(item=>item.classList.toggle("active",item.dataset.mode===state.mode));
+        if(info.duplicate){
+          $("duplicate-warning").textContent=`Already downloaded ${new Date(info.duplicate.completedAt).toLocaleString()} as “${info.duplicate.filename}”. You can download it again if needed.`;
+          $("duplicate-warning").classList.add("show");
+        }else{$("duplicate-warning").classList.remove("show");$("duplicate-warning").textContent=""}
+        $("card").style.display="block";renderOptions();
+      }catch(error){$("error").textContent=error.message||"Could not inspect that link."}
+      finally{$("find").disabled=false;$("find").textContent="Find video →"}
+    };
+
+    document.querySelectorAll(".tab").forEach(button=>button.onclick=()=>{
+      document.querySelectorAll(".tab").forEach(item=>item.classList.remove("active"));
+      button.classList.add("active");state.mode=button.dataset.mode;renderOptions();
+    });
+
+    $("add-queue").onclick=()=>{
+      const job=currentJob();if(!job)return;
+      if(state.queue.some(item=>item.url===job.url&&item.mode===job.mode&&item.quality===job.quality)){
+        $("error").textContent="That link and quality are already queued.";return;
+      }
+      state.queue.push(job);renderQueue();$("url").value="";$("url").focus();$("error").textContent="";
+    };
+
+    $("clear").onclick=()=>{if(!state.running){state.queue=state.queue.filter(job=>job.status==="done");renderQueue()}};
+
+    $("download").onclick=async()=>{
+      const job=currentJob();if(!job||state.running)return;
+      state.running=true;$("download").disabled=true;$("download").firstElementChild.textContent="Downloading and processing...";$("progress").style.display="block";
+      try{await fetchDownload(job)}catch(error){$("error").textContent=error.message||"Download failed."}
+      finally{state.running=false;$("download").disabled=false;$("download").firstElementChild.textContent="Download now";$("progress").style.display="none";renderQueue()}
+    };
+
+    $("download-all").onclick=async()=>{
+      if(state.running)return;state.running=true;$("progress").style.display="block";renderQueue();
+      const jobs=state.queue.filter(job=>job.status!=="done"&&job.status!=="paused");let cursor=0;
+      const worker=async()=>{
+        while(cursor<jobs.length){
+          const job=jobs[cursor++];job.status="downloading";job.error="";renderQueue();
+          try{await fetchDownload(job);job.status="done"}
+          catch(error){job.status="failed";job.error=error.message||"Download failed."}
+          renderQueue();
+        }
+      };
+      await Promise.all(Array.from({length:Math.min(settings.parallelDownloads,jobs.length)},worker));
+      state.running=false;$("progress").style.display="none";renderQueue();
+    };
+
+    function syncSettings(){
+      $("setting-mode").value=settings.defaultMode;
+      $("setting-preset").value=settings.preset;
+      $("setting-mp3").value=settings.mp3Quality;
+      $("setting-parallel").value=String(settings.parallelDownloads);
+      $("setting-subtitles").value=settings.subtitles?"embed":"off";
+      $("setting-metadata").value=settings.metadata?"on":"off";
+      $("setting-thumbnail").value=settings.thumbnail?"on":"off";
+      $("setting-sponsor").value=settings.sponsorBlock;
+      $("setting-clipboard").value=settings.clipboard?"on":"off";
+      $("parallel-label").textContent=String(settings.parallelDownloads);
+    }
+    $("settings-open").onclick=()=>{$("settings-panel").classList.add("open");syncSettings()};
+    $("settings-close").onclick=()=>$("settings-panel").classList.remove("open");
+    $("settings-save").onclick=()=>{
+      settings.defaultMode=$("setting-mode").value;
+      settings.preset=$("setting-preset").value;
+      settings.mp3Quality=$("setting-mp3").value;
+      settings.parallelDownloads=Number($("setting-parallel").value);
+      settings.subtitles=$("setting-subtitles").value==="embed";
+      settings.metadata=$("setting-metadata").value==="on";
+      settings.thumbnail=$("setting-thumbnail").value==="on";
+      settings.sponsorBlock=$("setting-sponsor").value;
+      settings.clipboard=$("setting-clipboard").value==="on";
+      try{localStorage.setItem("fluxsave-settings",JSON.stringify(settings))}catch{}
+      syncSettings();startClipboardDetection();$("settings-panel").classList.remove("open");
+    };
+    $("engine-update").onclick=async()=>{
+      const button=$("engine-update");button.disabled=true;$("engine-update-status").textContent="Checking for an update…";
+      try{
+        const response=await fetch("/api/update-engine",{method:"POST"});const payload=await response.json();
+        if(!response.ok)throw Error(payload.error);$("engine-update-status").textContent=payload.message;
+      }catch(error){$("engine-update-status").textContent=error.message||"Engine update failed."}
+      finally{button.disabled=false}
+    };
+    let clipboardTimer=null,lastClipboard="";
+    function startClipboardDetection(){
+      if(clipboardTimer){clearInterval(clipboardTimer);clipboardTimer=null}
+      if(!settings.clipboard||typeof navigator==="undefined"||!navigator.clipboard?.readText)return;
+      clipboardTimer=setInterval(async()=>{
+        try{
+          const value=(await navigator.clipboard.readText()).trim();
+          if(value!==lastClipboard&&/^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|instagram\.com|twitter\.com|x\.com|snapchat\.com)\//i.test(value)){
+            lastClipboard=value;$("url").value=value;$("error").textContent="Supported link detected from clipboard. Select Find video to inspect it.";
+          }
+        }catch{}
+      },3000);
+    }
+    syncSettings();
+    startClipboardDetection();
+    renderQueue();
+    loadHistory();
+  </script>
+</body>
+</html>
