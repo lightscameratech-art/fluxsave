@@ -1,14 +1,15 @@
 {
   "name": "fluxsave-desktop",
-  "version": "1.2.6",
+  "version": "1.5.1",
+  "buildDate": "2026-11-09",
   "description": "Native high-quality social media downloader for macOS and Windows",
   "main": "main.cjs",
   "author": "FluxSave",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist:mac": "electron-packager . FluxSave --platform=darwin --arch=arm64 --out=release --overwrite --no-prune --icon=assets/icon.icns",
-    "dist:win": "electron-packager . FluxSave --platform=win32 --arch=x64 --out=release --overwrite --no-prune --icon=assets/icon.ico",
+    "dist:mac": "electron-packager . FluxSave --platform=darwin --arch=arm64 --out=release --overwrite --icon=assets/icon.icns",
+    "dist:win": "electron-packager . FluxSave --platform=win32 --arch=x64 --out=release --overwrite --icon=assets/icon.ico",
     "dist": "pnpm run dist:mac && pnpm run dist:win"
   },
   "dependencies": {
